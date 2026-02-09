@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farm Control</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;   /* Blue 600 */
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed; /* Violet 600 */
+            --success: #16a34a;   /* Green 600 */
+            --danger: #dc2626;    /* Red 600 */
+            --warning: #ca8a04;   /* Yellow 600 */
+            --info: #0ea5e9;      /* Sky 500 */
+
+            --dark-bg: #0f172a;   /* Slate 900 */
+            --light-bg: #f8fafc;  /* Slate 50 */
+
+            --text-light: #334155;/* Slate 700 */
+            --text-dark: #e2e8f0; /* Slate 200 */
+
+            --card-light: rgba(255, 255, 255, 0.9);
+            --card-dark: rgba(30, 41, 59, 0.9);
+
+            --border-light: rgba(255, 255, 255, 0.8);
+            --border-dark: rgba(255, 255, 255, 0.1);
+
+            --shadow-light: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            --shadow-dark: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--dark-bg);
+            --text-color: var(--text-dark);
+            --card-bg: var(--card-dark);
+            --card-border: var(--border-dark);
+            --input-bg: rgba(15, 23, 42, 0.8);
+            --input-border: rgba(255, 255, 255, 0.15);
+            --log-bg: rgba(15, 23, 42, 0.6);
+            --shadow: var(--shadow-dark);
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--light-bg);
+            --text-color: var(--text-light);
+            --card-bg: var(--card-light);
+            --card-border: var(--border-light);
+            --input-bg: #ffffff;
+            --input-border: #e2e8f0;
+            --log-bg: #f1f5f9;
+            --shadow: var(--shadow-light);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 15px 25px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: var(--primary);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .icon-btn {
+            background: var(--input-bg);
+            border: 2px solid var(--input-border);
+            color: var(--text-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Softer shadow */
+        }
+        .icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary-dark);
+            transform: translateY(-1px); /* Lift effect */
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2); /* Enhanced shadow on hover */
+        }
+        .icon-btn.recording {
+            background: var(--danger);
+            color: white;
+            border-color: var(--danger);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7); } /* Using primary blue for pulse */
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(33, 150, 243, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(33, 150, 243, 0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border); /* Changed to 1px solid */
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px); /* Slightly more lift */
+            box-shadow: 0 8px 20px rgba(0, 188, 212, 0.4); /* Enhanced colourful shadow */
+        }
+
+        .card h3 {
+            margin-top: 0;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            opacity: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary); /* Default to primary, overridden by specific classes */
+            border-bottom: 1px solid var(--border-light); /* Default, overridden by specific classes */
+            padding-bottom: 10px;
+        }
+
+        /* Specific card header styles */
+        .card-header-info { color: var(--info); border-bottom: 1px solid var(--info); }
+        .card-header-success { color: var(--success); border-bottom: 1px solid var(--success); }
+        .card-header-secondary { color: var(--secondary); border-bottom: 1px solid var(--secondary); }
+        .card-header-danger { color: var(--danger); border-bottom: 1px solid var(--danger); }
+        .card-header-warning { color: var(--warning); border-bottom: 1px solid var(--warning); }
+        .card-header-primary { color: var(--primary); border-bottom: 1px solid var(--primary); }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+        /* Metrics */
+        .metric { text-align: center; }
+        .metric-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary), var(--primary)); /* Extended gradient */
+            background-size: 200% auto; /* Allow for animation */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -1px;
+            animation: metric-gradient-animation 4s ease-in-out infinite alternate; /* Apply animation */
+        }
+        @keyframes metric-gradient-animation {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+        .metric-label {
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            background: var(--input-bg);
+            border-radius: 100px;
+            height: 12px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--input-border);
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 100px;
+            background-size: 20px 20px;
+            background-image: linear-gradient(45deg, rgba(0, 188, 212,.2) 25%, transparent 25%, transparent 50%, rgba(255, 152, 0,.2) 50%, rgba(255, 152, 0,.2) 75%, transparent 75%, transparent);
+            animation: progress-stripe 1s linear infinite;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes progress-stripe { 0% { background-position: 20px 0; } 100% { background-position: 0 0; } }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: 'Poppins', sans-serif;
+            width: 100%;
+        }
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 6px 15px rgba(0, 188, 212, 0.4); /* Colored shadow for primary */
+        }
+        .btn-primary:hover { filter: brightness(1.1); }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success), #388E3C); /* Darker green for gradient */
+            color: white;
+            box-shadow: 0 6px 15px rgba(139, 195, 74, 0.4); /* Colored shadow for success */
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger), #D32F2F); /* Darker red for gradient */
+            color: white;
+            box-shadow: 0 6px 15px rgba(244, 67, 54, 0.4); /* Colored shadow for danger */
+        }
+
+        .btn-connect {
+            background: var(--input-bg);
+            color: var(--text-color);
+            border: 1px solid var(--primary);
+            width: auto;
+            padding: 10px 24px;
+        }
+        .btn-connect:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark)); /* Vibrant gradient */
+            color: white;
+            transform: translateY(-2px); /* More lift */
+            box-shadow: 0 8px 15px rgba(0, 188, 212, 0.4); /* Colorful shadow */
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--input-border);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: rgba(var(--primary), 0.05); } /* Softer hover background */
+
+        /* Inputs */
+        input[type="text"], input[type="number"], input[type="time"] {
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-color);
+            width: 100%;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.3); }
+
+        /* Range Slider */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            margin: 10px 0;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            margin-top: -8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* Softer shadow */
+            border: 2px solid white;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: var(--input-border);
+            border-radius: 2px;
+        }
+
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: hsl(187, 100%, 70%); transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        input:checked + .slider { background-color: var(--success); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        /* Weather & Logs */
+        .weather-widget {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            background: var(--input-bg);
+            border-radius: 16px;
+            margin-top: 10px;
+        }
+        #logContainer {
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.8rem;
+            background: var(--log-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
+        }
+        .log-entry { margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid rgba(var(--input-border), 0.5); } /* Softer border */
+
+        /* Status Badge */
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+        .status-on { background: rgba(var(--success), 0.15); color: var(--success); border: 1px solid rgba(var(--success), 0.3); } /* Using new success color */
+        .status-off { background: var(--input-bg); color: var(--text-light); border: 1px solid var(--input-border); }
+
+
+
+        /* Schedule Styles */
+        .schedule-input-group {
+            background: rgba(var(--info), 0.05);
+            border: 1px solid rgba(var(--info), 0.1);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .input-with-icon {
+            position: relative;
+        }
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--info); /* Using info color for input icons */
+            opacity: 0.7;
+        }
+        .input-with-icon input {
+            padding-left: 40px;
+        }
+
+        .schedule-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .schedule-item {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: 14px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--input-border);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); /* Softer shadow */
+            transition: all 0.2s ease;
+        }
+        .schedule-item:hover {
+            transform: translateY(-4px); /* Even more lift */
+            border-color: var(--primary);
+            box-shadow: 0 12px 20px rgba(0, 188, 212, 0.3); /* More pronounced colorful shadow */
+        }
+        .schedule-details {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .schedule-time {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .schedule-duration {
+            font-size: 0.85rem;
+            opacity: 0.7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .schedule-delete {
+            background: rgba(var(--danger), 0.1);
+            color: var(--danger);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .schedule-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Custom Scrollbar for list */
+        .schedule-list::-webkit-scrollbar { width: 6px; }
+        .schedule-list::-webkit-scrollbar-thumb { background-color: var(--input-border); border-radius: 10px; }
+
+        /* Custom Select */
+        .select-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .select-container select {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border-radius: 12px;
+            border: 1px solid var(--input-border);
+            background: var(--input-bg);
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .select-container select:hover { border-color: var(--primary); }
+        .select-container::after {
+            content: '\f078';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            pointer-events: none;
+            transition: 0.2s;
+        }
+        .select-container:hover::after { color: var(--primary); }
+
+        /* Enhanced Sliders */
+        .range-wrapper { margin-bottom: 15px; }
+        .range-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; }
+        input[type=range] {
+            height: 6px;
+            background: var(--input-border);
+            border-radius: 5px;
+            margin-top: 5px;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            margin-top: -7px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Crop Icon */
+        .crop-display {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: rgba(var(--info), 0.05);
+            border: 1px solid rgba(var(--info), 0.1);
+            border-radius: 16px;
+        }
+        .crop-icon-large {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            color: var(--primary);
+        }
+        [data-theme="dark"] .crop-icon-large { background: var(--card-bg); }
+        .crop-info h4 { margin: 0 0 2px 0; font-size: 1rem; }
+        .crop-info p { margin: 0; font-size: 0.8rem; opacity: 0.7; }
+
+        /* Mobile */
+        @media (max-width: 1024px) { .grid-3 { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            header { flex-direction: column; gap: 15px; text-align: center; padding: 20px; }
+            .header-controls { width: 100%; justify-content: center; gap: 20px; }
+            .icon-btn { width: 48px; height: 48px; font-size: 1.2rem; }
+            .metric-value { font-size: 1.8rem; }
+            #alertArea { width: 90%; }
+
+            /* Analytics Mobile */
+            .chart-header { flex-direction: column; align-items: stretch; gap: 15px; }
+            .chart-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+            /* Mobile Adjustments for Toasts */
+            #alertArea {
+                right: 10px;
+                left: 10px;
+                width: auto;
+                padding-left: 10px; /* Added left padding as requested */
+            }
+            .alert {
+                animation: toastInMobile 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            }
+        }
+
+        @keyframes toastInMobile {
+            from { opacity: 0; transform: translateY(-20px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Analytics */
+        .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .chart-controls { display: flex; gap: 10px; }
+        
+        /* Enhanced Toast Notifications */
+        #alertArea { 
+            position: fixed; 
+            top: 20px; 
+            right: 20px; 
+            z-index: 9999; 
+            width: 350px; 
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+        
+        .alert { 
+            padding: 16px 20px; 
+            border-radius: 16px; 
+            color: white; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); 
+            animation: toastIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: auto;
+            cursor: pointer;
+        }
+
+        .alert-bg-success { background: rgba(22, 163, 74, 0.9); }
+        .alert-bg-danger { background: rgba(220, 38, 38, 0.9); }
+        .alert-bg-warning { background: rgba(202, 138, 4, 0.9); }
+        .alert-bg-info { background: rgba(14, 165, 233, 0.9); }
+
+        .alert i { font-size: 1.2rem; }
+        
+        .alert::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.4);
+            width: 100%;
+            animation: toastProgress 4s linear forwards;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(50px) scale(0.9); }
+            to { opacity: 1; transform: translateX(0) scale(1); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0) scale(1); }
+            to { opacity: 0; transform: translateX(50px) scale(0.9); }
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* --- New Animations --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Apply entrance animation to cards */
+        .card {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+        }
+        /* Stagger delays */
+        .grid-3 > .card:nth-child(1) { animation-delay: 0.1s; }
+        .grid-3 > .card:nth-child(2) { animation-delay: 0.2s; }
+        .grid-3 > .card:nth-child(3) { animation-delay: 0.3s; }
+        .grid-2 > .card:nth-child(1) { animation-delay: 0.4s; }
+        .grid-2 > .card:nth-child(2) { animation-delay: 0.5s; }
+
+        /* Pump Active Animation (Flowing/Bouncing) */
+        @keyframes flowWave {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-3px); text-shadow: 0 5px 10px rgba(33, 150, 243, 0.6); }
+            100% { transform: translateY(0); }
+        }
+        .pump-active-icon {
+            animation: flowWave 1s ease-in-out infinite;
+            color: var(--primary) !important;
+        }
+
+        /* Sprayer Active Animation (Shaking) */
+        @keyframes sprayShake {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            50% { transform: rotate(10deg); }
+            75% { transform: rotate(-5deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .spray-active-icon {
+            animation: sprayShake 0.5s linear infinite;
+            color: var(--danger) !important;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="container">
+        <header>
+            <div class="header-controls">
+                <button id="voiceBtn" class="icon-btn" onclick="toggleVoice()" title="Voice Command" style="background-color:var(--danger); color:white;">
+                    <i class="fas fa-microphone"></i>
+                </button>
+
+                <button class="icon-btn" onclick="toggleTheme()" title="Toggle Theme" style="background-color:var(--secondary); color:white;">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+            <h1><i class="fas fa-tractor"></i> Smart Farm Hub</h1>
+
+            <div style="margin-top: 20px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                <button id="connectBtn" class="btn btn-connect"><i class="fas fa-plug"></i> Connect Device</button>
+            </div>
+            <p id="connectionStatus" style="margin-top: 10px; opacity: 0.8;"><i class="fas fa-circle-notch"></i> Status: Disconnected</p>
+        </header>
+
+        <div id="alertArea"></div>
+
+        <!-- Row 1: Weather & Stats -->
+        <div class="grid-3">
+            <!-- Weather Card -->
+            <div class="card">
+                <h3 class="card-header-info"><i class="fas fa-cloud-sun"></i> Local Weather</h3>
+                <div id="weatherContent" style="text-align: center; padding: 10px;">
+                    <p>Detecting location...</p>
+                </div>
+            </div>
+
+            <!-- Main Stats -->
+            <div class="card">
+                <div class="grid-2">
+                    <div class="metric">
+                        <div class="metric-label">Avg Moisture</div>
+                        <div class="metric-value" style="color:var(--info);"><span id="avgMoisture">0</span>%</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-label">System</div>
+                        <div id="systemStatusBadge" class="status-badge status-off">IDLE</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Usage Stats -->
+            <div class="card">
+                 <div class="grid-2">
+                    <div class="metric">
+                        <div class="metric-label">Pump Runtime</div>
+                        <div class="metric-value" style="color:var(--secondary);" id="pumpRuntime">0m</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Sensors -->
+        <div class="grid-2">
+            <div class="card">
+                <h3 class="card-header-success" style="text-align: center;"><i class="fas fa-seedling"></i> Left Sensor</h3>
+                <div class="metric-value" style="text-align: center;"><span id="leftMoisture">0</span>%</div>
+                <div style="background:#e2e8f0; border-radius:10px; height:15px; margin:10px 0; overflow:hidden;">
+                    <div id="leftBar" style="height:100%; background:var(--info); width:0%; transition:width 0.5s;"></div>
+                </div>
+            </div>
+            <div class="card">
+                <h3 class="card-header-secondary" style="text-align: center;"><i class="fas fa-seedling"></i> Right Sensor</h3>
+                <div class="metric-value" style="text-align: center;"><span id="rightMoisture">0</span>%</div>
+                <div style="background:#e2e8f0; border-radius:10px; height:15px; margin:10px 0; overflow:hidden;">
+                    <div id="rightBar" style="height:100%; background:var(--secondary); width:0%; transition:width 0.5s;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Control Center -->
+        <div class="grid-3">
+            <!-- Manual Controls -->
+            <div class="card">
+                <h3 class="card-header-danger"><i class="fas fa-gamepad"></i> Manual Control</h3>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span><i id="pumpIcon" class="fas fa-water"></i> Pump</span>
+                    <span id="pumpStateBadge" class="status-badge status-off">OFF</span>
+                </div>
+                <div class="grid-2" style="margin-bottom:15px;">
+                    <button onclick="sendCommand('PUMP_ON')" class="btn btn-success">ON</button>
+                    <button onclick="sendCommand('PUMP_OFF')" class="btn btn-danger">OFF</button>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <span><i id="sprayIcon" class="fas fa-spray-can"></i> Sprayer</span>
+                    <span id="sprayStateBadge" class="status-badge status-off">OFF</span>
+                </div>
+                <div class="grid-2">
+                    <button onclick="sendCommand('SPRAY_ON')" class="btn btn-success">ON</button>
+                    <button onclick="sendCommand('SPRAY_OFF')" class="btn btn-danger">OFF</button>
+                </div>
+            </div>
+
+            <!-- Auto Mode & Settings -->
+            <div class="card">
+                <h3 class="card-header-warning"><i class="fas fa-robot"></i> Auto Mode</h3>
+
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+                    <strong>Enable Auto-Watering</strong>
+                    <label class="switch">
+                        <input type="checkbox" id="autoModeToggle" onchange="updateSettings()">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="crop-display">
+                    <div class="crop-icon-large">
+                        <i id="cropIcon" class="fas fa-seedling"></i>
+                    </div>
+                    <div class="crop-info">
+                        <h4 id="cropTitle">Custom Settings</h4>
+                        <p id="cropDesc">Manual moisture control</p>
+                    </div>
+                </div>
+
+                <div class="select-container">
+                    <select id="cropPreset" onchange="applyPreset()">
+                        <option value="custom">Custom Configuration</option>
+                        <option value="tomato">Tomato (Vegetables)</option>
+                        <option value="chili">Chili (Spices)</option>
+                        <option value="rice">Rice (Grains)</option>
+                        <option value="wheat">Wheat (Cereals)</option>
+                    </select>
+                </div>
+
+                <div class="range-wrapper">
+                    <div class="range-header">
+                        <span>Low Threshold</span>
+                        <span style="color:var(--danger); font-weight:600;"><span id="lowThresValue">30</span>%</span>
+                    </div>
+                    <input type="range" id="lowThresInput" min="0" max="100" value="30" oninput="updateSettings()">
+                </div>
+
+                <div class="range-wrapper">
+                    <div class="range-header">
+                        <span>High Threshold</span>
+                        <span style="color:var(--primary); font-weight:600;"><span id="highThresValue">70</span>%</span>
+                    </div>
+                    <input type="range" id="highThresInput" min="0" max="100" value="70" oninput="updateSettings()">
+                </div>
+            </div>
+
+            <!-- Scheduler -->
+            <div class="card">
+                <h3 class="card-header-primary"><i class="fas fa-calendar-alt"></i> Schedule</h3>
+
+                <div class="schedule-input-group">
+                    <div class="grid-2" style="margin-bottom:15px;">
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:500; margin-bottom:5px; display:block;">Start Time</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-clock"></i>
+                                <input type="time" id="schedTime">
+                            </div>
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem; font-weight:500; margin-bottom:5px; display:block;">Duration (min)</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-hourglass-half"></i>
+                                <input type="number" id="schedDuration" min="1" value="5">
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addSchedule()">
+                        <i class="fas fa-plus-circle"></i> Add Task
+                    </button>
+                </div>
+
+                <h4 style="font-size:0.9rem; opacity:0.6; margin: 0 0 10px 5px; text-transform:uppercase; letter-spacing:1px;">Upcoming Tasks</h4>
+                <ul id="scheduleList" class="schedule-list"></ul>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="card">
+            <div class="chart-header">
+                <h3 class="card-header-info"><i class="fas fa-chart-line"></i> Analytics</h3>
+                <div class="chart-controls">
+                     <button onclick="clearChart()" class="btn-outline">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                    <button onclick="downloadCSV()" class="btn btn-primary" style="margin:0; width: auto;">
+                        <i class="fas fa-download"></i> CSV
+                    </button>
+                </div>
+            </div>
+            <div style="position: relative; height: 300px; width: 100%">
+                <canvas id="moistureChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Logs -->
+        <div class="card">
+                            <h3 class="card-header-primary"><i class="fas fa-clipboard-list"></i> System Log</h3>            <div id="logContainer"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Core Variables ---
+        let port, reader, writer;
+        let isConnected = false;
+        let dataLog = [];
+        let schedules = []; // Array of {time: "HH:MM", duration: 5}
+        let voiceRec;
+
+        let state = {
+            left: 0, right: 0,
+            pump: 'OFF', spray: 'OFF',
+            autoMode: false,
+            lowThres: 30, highThres: 70,
+            pumpStartTime: null,
+            pumpTotalRuntime: 0,
+            theme: 'light'
+        };
+
+        // --- Initialization ---
+        window.onload = function() {
+            loadSettings();
+            initChart();
+            initWeather();
+            renderSchedules();
+
+            // Start clock for scheduler
+            setInterval(checkSchedule, 1000);
+
+            // Listen for system theme changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+                // Update only if we want to strictly follow system when no manual override exists
+                // or simply update state. For now, we update if it changes.
+                 const newTheme = e.matches ? 'dark' : 'light';
+                 setTheme(newTheme);
+            });
+        };
+
+        // --- Settings Management ---
+        function loadSettings() {
+            // Default to system preference
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let themeToUse = systemPrefersDark ? 'dark' : 'light';
+
+            if(localStorage.getItem('farmSettings')) {
+                const saved = JSON.parse(localStorage.getItem('farmSettings'));
+                state.lowThres = saved.lowThres || 30;
+                state.highThres = saved.highThres || 70;
+                state.autoMode = saved.autoMode || false;
+                // Use saved theme if it exists, otherwise use system preference
+                if (saved.theme) {
+                    themeToUse = saved.theme;
+                }
+                schedules = saved.schedules || [];
+            }
+            state.theme = themeToUse;
+
+            // Update UI inputs
+            document.getElementById('lowThresInput').value = state.lowThres;
+            document.getElementById('highThresInput').value = state.highThres;
+            document.getElementById('autoModeToggle').checked = state.autoMode;
+
+            // Set initial preset
+            const initialPreset = checkPresetMatch(state.lowThres, state.highThres);
+            document.getElementById('cropPreset').value = initialPreset;
+            updateCropIcon(initialPreset);
+
+            setTheme(state.theme);
+            updateSettingsUI();
+        }
+
+        function saveSettings() {
+            localStorage.setItem('farmSettings', JSON.stringify({
+                lowThres: state.lowThres,
+                highThres: state.highThres,
+                autoMode: state.autoMode,
+                theme: state.theme,
+                schedules: schedules
+            }));
+        }
+
+        function updateSettings() {
+            state.lowThres = document.getElementById('lowThresInput').value;
+            state.highThres = document.getElementById('highThresInput').value;
+            state.autoMode = document.getElementById('autoModeToggle').checked;
+
+            // Check if current values match any preset
+            const currentPreset = checkPresetMatch(state.lowThres, state.highThres);
+            document.getElementById('cropPreset').value = currentPreset;
+
+            updateCropIcon(currentPreset);
+            updateSettingsUI();
+            saveSettings();
+        }
+
+        function checkPresetMatch(low, high) {
+            // Loose equality check for string/number match
+            if (low == 60 && high == 80) return 'tomato';
+            if (low == 50 && high == 70) return 'chili';
+            if (low == 70 && high == 90) return 'rice';
+            if (low == 80 && high == 100) return 'wheat';
+            return 'custom';
+        }
+
+        function updateSettingsUI() {
+            document.getElementById('lowThresValue').innerText = state.lowThres;
+            document.getElementById('highThresValue').innerText = state.highThres;
+        }
+
+        function applyPreset() {
+            const preset = document.getElementById('cropPreset').value;
+            let low = state.lowThres;
+            let high = state.highThres;
+
+            if (preset === 'tomato') { low = 60; high = 80; }
+            else if (preset === 'chili') { low = 50; high = 70; }
+            else if (preset === 'rice') { low = 70; high = 90; }
+            else if (preset === 'wheat') { low = 80; high = 100; }
+
+            if (preset !== 'custom') {
+                document.getElementById('lowThresInput').value = low;
+                document.getElementById('highThresInput').value = high;
+                updateSettings(); // This will trigger UI updates and saving
+            } else {
+                updateCropIcon('custom');
+            }
+        }
+
+        function updateCropIcon(preset) {
+            const iconEl = document.getElementById('cropIcon');
+            const titleEl = document.getElementById('cropTitle');
+            const descEl = document.getElementById('cropDesc');
+
+            const data = {
+                'tomato': { icon: 'carrot', title: 'Tomato', desc: 'Moist soil (60-80%)' },
+                'chili': { icon: 'pepper-hot', title: 'Chili', desc: 'Moderate moisture (50-70%)' },
+                'rice': { icon: 'bowl-rice', title: 'Rice', desc: 'High moisture (70-90%)' },
+                'wheat': { icon: 'wheat-awn', title: 'Wheat', desc: 'Very high moisture (80-100%)' },
+                'custom': { icon: 'sliders', title: 'Custom Settings', desc: 'Manual configuration' }
+            };
+
+            const info = data[preset] || data['custom'];
+
+            // Animate change
+            iconEl.style.transform = 'scale(0.5)';
+            iconEl.style.opacity = '0';
+
+            setTimeout(() => {
+                iconEl.className = `fas fa-${info.icon}`;
+                titleEl.innerText = info.title;
+                descEl.innerText = info.desc;
+
+                iconEl.style.transform = 'scale(1)';
+                iconEl.style.opacity = '1';
+            }, 200);
+        }
+
+        // --- Weather API ---
+        function initWeather() {
+            const savedLoc = JSON.parse(localStorage.getItem('farmLocation'));
+            if(savedLoc) {
+                fetchWeather(savedLoc.lat, savedLoc.lon, savedLoc.name);
+                return;
+            }
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        fetchWeather(position.coords.latitude, position.coords.longitude, "Local");
+                    },
+                    (error) => {
+                        showLocationInput();
+                    }
+                );
+            } else {
+                showLocationInput();
+            }
+        }
+
+        function showLocationInput() {
+            const weatherEl = document.getElementById('weatherContent');
+            weatherEl.innerHTML = `
+                <div style="display:flex; gap:5px; justify-content:center; align-items:center; padding:10px;">
+                    <input type="text" id="cityInput" placeholder="Enter City" style="flex:1;">
+                    <button onclick="searchCity()" class="btn btn-primary" style="width:auto; margin:0; padding:8px 12px;"><i class="fas fa-search"></i></button>
+                    <button onclick="retryGPS()" class="btn-outline" style="width:auto; margin:0; padding:8px 12px; border-color:var(--primary); color:var(--primary);" title="Use GPS"><i class="fas fa-location-arrow"></i></button>
+                </div>
+                <div style="font-size:0.8rem; opacity:0.7; text-align:center;">Enter city or use GPS</div>
+            `;
+        }
+
+        function retryGPS() {
+            const weatherEl = document.getElementById('weatherContent');
+            weatherEl.innerHTML = '<div style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> Locating...</div>';
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const loc = { lat: position.coords.latitude, lon: position.coords.longitude, name: "GPS Location" };
+                        localStorage.setItem('farmLocation', JSON.stringify(loc));
+                        fetchWeather(loc.lat, loc.lon, loc.name);
+                    },
+                    (error) => {
+                        // Fallback to IP location on error (common on mobile without HTTPS)
+                        console.warn("GPS failed, trying IP location...", error);
+                        fetchIPLocation();
+                    }
+                );
+            } else {
+                fetchIPLocation();
+            }
+        }
+
+        async function fetchIPLocation() {
+            try {
+                const res = await fetch('https://ipapi.co/json/');
+                const data = await res.json();
+                if (data.latitude && data.longitude) {
+                    const loc = { lat: data.latitude, lon: data.longitude, name: data.city || "IP Location" };
+                    localStorage.setItem('farmLocation', JSON.stringify(loc));
+                    fetchWeather(loc.lat, loc.lon, loc.name);
+                } else {
+                    throw new Error("Invalid IP data");
+                }
+            } catch (e) {
+                showLocationInput();
+                alert("Location failed. Please enter city manually.");
+            }
+        }
+
+        async function searchCity() {
+            const city = document.getElementById('cityInput').value;
+            if(!city) return;
+
+            const btn = document.querySelector('#weatherContent button');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`);
+                const data = await res.json();
+                if(data.results && data.results.length > 0) {
+                    const { latitude, longitude, name } = data.results[0];
+                    localStorage.setItem('farmLocation', JSON.stringify({ lat: latitude, lon: longitude, name: name }));
+                    fetchWeather(latitude, longitude, name);
+                } else {
+                    alert("City not found!");
+                    btn.innerHTML = '<i class="fas fa-search"></i>';
+                }
+            } catch(e) {
+                alert("Error searching city");
+                btn.innerHTML = '<i class="fas fa-search"></i>';
+            }
+        }
+
+        async function fetchWeather(lat, lon, name) {
+            const weatherEl = document.getElementById('weatherContent');
+            try {
+                const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
+                const data = await response.json();
+                const w = data.current_weather;
+
+                let icon = 'sun';
+                let advice = "Good conditions.";
+
+                if (w.weathercode > 50) { icon = 'cloud-rain'; advice = "Raining. Skip watering."; }
+                else if (w.weathercode > 3) { icon = 'cloud'; advice = "Cloudy skies."; }
+                else if (w.temperature > 30) { icon = 'temperature-high'; advice = "High heat! Water crops."; }
+
+                weatherEl.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                         <span style="font-size:0.9rem; opacity:0.7;"><i class="fas fa-map-marker-alt"></i> ${name}</span>
+                         <button onclick="localStorage.removeItem('farmLocation'); initWeather();" style="background:none; border:none; color:var(--danger); cursor:pointer;" title="Reset Location"><i class="fas fa-times"></i></button>
+                    </div>
+                    <div class="weather-widget">
+                        <div>
+                            <div class="weather-temp" style="color:var(--info);">${w.temperature}°C</div>
+                            <div style="opacity:0.7">Wind: ${w.windspeed} km/h</div>
+                        </div>
+                        <i class="fas fa-${icon} weather-icon" style="color: ${icon === 'sun' ? 'var(--warning)' : icon === 'cloud-rain' ? 'var(--info)' : icon === 'temperature-high' ? 'var(--danger)' : 'var(--text-light)'};"></i>
+                    </div>
+                    <div class="weather-advice"><i class="fas fa-info-circle"></i> ${advice}</div>
+                `;
+            } catch (e) {
+                weatherEl.innerHTML = "Weather unavailable.";
+            }
+        }
+
+
+
+        // --- Scheduler System ---
+        function addSchedule() {
+            const time = document.getElementById('schedTime').value;
+            const duration = parseInt(document.getElementById('schedDuration').value);
+
+            if (!time || !duration) { showAlert("Please enter time and duration", "warning"); return; }
+
+            schedules.push({ id: Date.now(), time, duration });
+            saveSettings();
+            renderSchedules();
+            showAlert(`Scheduled pump at ${time} for ${duration}m`, "success");
+        }
+
+        function removeSchedule(id) {
+            schedules = schedules.filter(s => s.id !== id);
+            saveSettings();
+            renderSchedules();
+        }
+
+        function renderSchedules() {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = "";
+            schedules.sort((a, b) => a.time.localeCompare(b.time)); // Sort by time
+
+            schedules.forEach(s => {
+                const li = document.createElement('li');
+                li.className = 'schedule-item';
+
+                // Format time to 12h for display
+                const [hours, mins] = s.time.split(':');
+                const date = new Date();
+                date.setHours(hours);
+                date.setMinutes(mins);
+                const timeString = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                li.innerHTML = `
+                    <div class="schedule-details">
+                        <div class="schedule-time"><i class="far fa-clock"></i> ${timeString}</div>
+                        <div class="schedule-duration"><i class="fas fa-stopwatch"></i> Run for ${s.duration} min</div>
+                    </div>
+                    <button class="schedule-delete" onclick="removeSchedule(${s.id})" title="Remove">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                `;
+                list.appendChild(li);
+            });
+
+            if(schedules.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align:center; padding:30px; opacity:0.5; border: 2px dashed var(--input-border); border-radius:12px;">
+                        <i class="fas fa-calendar-times" style="font-size:2rem; margin-bottom:10px;"></i>
+                        <p>No active schedules</p>
+                    </div>`;
+            }
+        }
+
+        function checkSchedule() {
+            const now = new Date();
+            const currentTime = now.toTimeString().substring(0, 5); // "HH:MM"
+
+            schedules.forEach(s => {
+                // If time matches and seconds is 0 (to trigger once per minute)
+                if (s.time === currentTime && now.getSeconds() === 0) {
+                    addLog(`⏰ Schedule triggered: Running pump for ${s.duration} min`);
+                    sendCommand('PUMP_ON');
+
+                    // Set timeout to turn off
+                    setTimeout(() => {
+                        addLog(`⏰ Schedule complete. Stopping pump.`);
+                        sendCommand('PUMP_OFF');
+                    }, s.duration * 60 * 1000);
+                }
+            });
+        }
+
+        // --- Voice Control ---
+        function toggleVoice() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert("Voice control requires Chrome/Edge.");
+                return;
+            }
+            if (voiceRec) { voiceRec.stop(); voiceRec = null; return; }
+
+            voiceRec = new webkitSpeechRecognition();
+            voiceRec.continuous = false;
+            voiceRec.lang = 'en-US';
+
+            const btn = document.getElementById('voiceBtn');
+            btn.classList.add('recording');
+
+            voiceRec.onresult = async function(event) {
+                const command = event.results[0][0].transcript.toLowerCase();
+                addLog(`🎤 Voice: "${command}"`);
+                
+                let success = false;
+                let reply = "";
+
+                // Pump Control
+                if (command.includes("turn on pump") || command.includes("start pump")) {
+                    if (state.pump === 'ON') { reply = "Pump is already on"; }
+                    else if (state.autoMode) { reply = "Disable auto mode first"; }
+                    else if (await sendCommand('PUMP_ON')) { reply = "Pump started"; success = true; }
+                    else reply = "Connection failed";
+                }
+                else if (command.includes("turn off pump") || command.includes("stop pump")) {
+                    if (state.pump === 'OFF') { reply = "Pump is already off"; }
+                    else if (state.autoMode) { reply = "Disable auto mode first"; }
+                    else if (await sendCommand('PUMP_OFF')) { reply = "Pump stopped"; success = true; }
+                    else reply = "Connection failed";
+                }
+                
+                // Spray Control
+                else if (command.includes("turn on spray")) {
+                    if (state.spray === 'ON') { reply = "Sprayer is already on"; }
+                    else if (await sendCommand('SPRAY_ON')) { reply = "Sprayer activated"; success = true; }
+                    else reply = "Connection failed";
+                }
+                else if (command.includes("turn off spray")) {
+                    if (state.spray === 'OFF') { reply = "Sprayer is already off"; }
+                    else if (await sendCommand('SPRAY_OFF')) { reply = "Sprayer deactivated"; success = true; }
+                    else reply = "Connection failed";
+                }
+                
+                // Auto Mode Control
+                else if (command.includes("auto mode on")) {
+                    if (state.autoMode) { reply = "Auto mode is already on"; }
+                    else {
+                        document.getElementById('autoModeToggle').checked = true;
+                        updateSettings();
+                        reply = "Auto mode enabled";
+                        success = true;
+                    }
+                }
+                else if (command.includes("auto mode off")) {
+                    if (!state.autoMode) { reply = "Auto mode is already off"; }
+                    else {
+                        document.getElementById('autoModeToggle').checked = false;
+                        updateSettings();
+                        reply = "Auto mode disabled";
+                        success = true;
+                    }
+                }
+                else {
+                    reply = "Command not recognized";
+                }
+
+                if (success) {
+                    showAlert(`Voice: ${reply}`, "success");
+                    speak(reply);
+                } else {
+                    showAlert(reply, reply.includes("already") ? "info" : "warning");
+                    speak(reply);
+                }
+            };
+
+            voiceRec.onend = function() {
+                btn.classList.remove('recording');
+                voiceRec = null;
+            };
+
+            voiceRec.start();
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                // Select a decent voice if possible
+                const voices = window.speechSynthesis.getVoices();
+                const preferred = voices.find(v => v.lang === 'en-US' && v.name.includes('Google')) || voices[0];
+                if (preferred) utterance.voice = preferred;
+                
+                utterance.rate = 1.1;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- Connection & Logic ---
+        document.getElementById('connectBtn').addEventListener('click', async () => {
+            if ("serial" in navigator) {
+                try {
+                    const baud = 9600;
+                    port = await navigator.serial.requestPort();
+                    await port.open({ baudRate: baud });
+                    isConnected = true;
+                    document.getElementById('connectionStatus').innerHTML = '<span style="color:var(--success)">Connected ✅</span>';
+                    document.getElementById('connectBtn').disabled = true;
+                    addLog(`Connected at ${baud} baud`);
+                    readLoop();
+                    startStatusLoop();
+                } catch (err) { showAlert("Connection failed: " + err, "danger"); }
+            }
+        });
+
+        async function readLoop() {
+            const textDecoder = new TextDecoderStream();
+            const readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
+            reader = textDecoder.readable.getReader();
+            let buffer = "";
+
+            try {
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    buffer += value;
+                    let lines = buffer.split('\n');
+                    buffer = lines.pop();
+                    for (const line of lines) if(line.trim()) processLine(line.trim());
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function sendCommand(cmd) {
+            if (!port || !port.writable) {
+                // Only alert if we are trying to send a manual command (not part of the status loop)
+                if (cmd !== 'STATUS') showAlert("Device not connected!", "danger");
+                return false;
+            }
+            if (state.autoMode && cmd.includes('PUMP')) {
+                showAlert("Disable Auto Mode to control pump.", "warning");
+                return false;
+            }
+            try {
+                const encoder = new TextEncoder();
+                const writer = port.writable.getWriter();
+                await writer.write(encoder.encode(cmd + "\n"));
+                writer.releaseLock();
+                if (cmd !== 'STATUS') addLog(`Sent: ${cmd}`);
+                return true;
+            } catch (e) {
+                console.error(e);
+                return false;
+            }
+        }
+
+        function startStatusLoop() {
+            setInterval(() => { if (isConnected) sendCommand('STATUS'); updateRuntime(); }, 2000);
+        }
+
+        function processLine(line) {
+            if (line.startsWith("DATA|")) {
+                const parts = line.split("|");
+                if (parts.length === 5) {
+                    const left = parseInt(parts[1]);
+                    const right = parseInt(parts[2]);
+                    updateState(left, right, parts[3], parts[4]);
+                }
+            }
+        }
+
+        function updateState(left, right, pump, spray) {
+            // Log data point
+            dataLog.push({
+                timestamp: new Date().toISOString(),
+                left: left,
+                right: right,
+                pump: pump,
+                spray: spray
+            });
+
+            state.left = left; state.right = right;
+            state.pump = pump; state.spray = spray;
+
+            // Logic for tracking runtime
+            if (pump === 'ON' && !state.pumpStartTime) state.pumpStartTime = Date.now();
+            if (pump === 'OFF' && state.pumpStartTime) {
+                state.pumpTotalRuntime += (Date.now() - state.pumpStartTime) / 1000;
+                state.pumpStartTime = null;
+            }
+
+            // Auto Mode Logic
+            if (state.autoMode) {
+                const avg = (left + right) / 2;
+                if (avg < state.lowThres && pump === 'OFF') {
+                    addLog("🤖 Auto: Moisture Low. Starting Pump.");
+                    writeRaw("PUMP_ON");
+                } else if (avg > state.highThres && pump === 'ON') {
+                    addLog("🤖 Auto: Moisture High. Stopping Pump.");
+                    writeRaw("PUMP_OFF");
+                }
+            }
+
+            updateUI();
+            updateChart(left, right);
+        }
+
+        async function writeRaw(cmd) {
+             if (!port || !port.writable) return;
+             const encoder = new TextEncoder();
+             const writer = port.writable.getWriter();
+             await writer.write(encoder.encode(cmd + "\n"));
+             writer.releaseLock();
+        }
+
+        // Helper for smooth number animation
+        function animateValue(obj, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                obj.innerHTML = Math.floor(progress * (end - start) + start);
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+
+        let lastLeft = 0;
+        let lastRight = 0;
+
+        function updateUI() {
+            // Animate Moisture Values
+            const leftEl = document.getElementById('leftMoisture');
+            if (state.left !== lastLeft) {
+                animateValue(leftEl, lastLeft, state.left, 500);
+                lastLeft = state.left;
+            }
+
+            const rightEl = document.getElementById('rightMoisture');
+            if (state.right !== lastRight) {
+                animateValue(rightEl, lastRight, state.right, 500);
+                lastRight = state.right;
+            }
+
+            const avg = ((state.left + state.right) / 2).toFixed(1);
+            document.getElementById('avgMoisture').innerText = avg;
+
+            document.getElementById('leftBar').style.width = state.left + "%";
+            document.getElementById('rightBar').style.width = state.right + "%";
+
+            updateBadge('pumpStateBadge', state.pump);
+            updateBadge('sprayStateBadge', state.spray);
+
+            // Icon Animations
+            const pumpIcon = document.getElementById('pumpIcon');
+            const sprayIcon = document.getElementById('sprayIcon');
+
+            if (state.pump === 'ON') pumpIcon.classList.add('pump-active-icon');
+            else pumpIcon.classList.remove('pump-active-icon');
+
+            if (state.spray === 'ON') sprayIcon.classList.add('spray-active-icon');
+            else sprayIcon.classList.remove('spray-active-icon');
+
+            // System Status
+            const anyActive = state.pump === 'ON' || state.spray === 'ON';
+            const sysBadge = document.getElementById('systemStatusBadge');
+            sysBadge.className = `status-badge ${anyActive ? 'status-on' : 'status-off'}`;
+            // Add spinning cog when active
+            sysBadge.innerHTML = anyActive ? '<i class="fas fa-cog fa-spin"></i> ACTIVE' : 'IDLE';
+        }
+
+        function updateBadge(id, status) {
+            const el = document.getElementById(id);
+            el.innerText = status;
+            el.className = `status-badge ${status === 'ON' ? 'status-on' : 'status-off'}`;
+        }
+
+        function updateRuntime() {
+            let totalSec = state.pumpTotalRuntime;
+            if (state.pump === 'ON' && state.pumpStartTime) {
+                totalSec += (Date.now() - state.pumpStartTime) / 1000;
+            }
+
+            // Time string
+            const m = Math.floor(totalSec / 60);
+            const h = Math.floor(m / 60);
+            document.getElementById('pumpRuntime').innerText = `${h}h ${m % 60}m`;
+        }
+
+        // --- Chart & Theme ---
+        let chart;
+        function initChart() {
+            const ctx = document.getElementById('moistureChart').getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Left',
+                            borderColor: '#8BC34A',
+                            backgroundColor: 'rgba(139, 195, 74, 0.2)', /* Using --success */
+                            data: [],
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Right',
+                            borderColor: '#FF9800',
+                            backgroundColor: 'rgba(255, 152, 0, 0.2)', /* Using --secondary */
+                            data: [],
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Removed to respect canvas height
+                    scales: {
+                        y: { beginAtZero: true, max: 100 },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { labels: { usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(left, right) {
+            if (!chart) return;
+            const now = new Date().toLocaleTimeString();
+            if (chart.data.labels.length > 20) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(left);
+            chart.data.datasets[1].data.push(right);
+            chart.update();
+        }
+
+        function clearChart() {
+            if (!chart) return;
+            chart.data.labels = [];
+            chart.data.datasets.forEach(ds => ds.data = []);
+            chart.update();
+        }
+
+        function toggleTheme() {
+            const newTheme = state.theme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+            saveSettings();
+        }
+
+        function setTheme(theme) {
+            state.theme = theme;
+            document.body.setAttribute('data-theme', theme);
+            const toggleBtn = document.querySelector('.icon-btn[title="Toggle Theme"] i');
+            if(toggleBtn) toggleBtn.className = theme === 'light' ? 'fas fa-moon' : 'fas fa-sun';
+
+            Chart.defaults.color = theme === 'dark' ? '#ECEFF1' : '#455A64'; /* Using var(--text-dark) and var(--text-light) */
+            Chart.defaults.borderColor = theme === 'dark' ? 'rgba(236, 239, 241, 0.1)' : 'rgba(69, 90, 100, 0.1)'; /* Using var(--text-dark) and var(--text-light) */
+            if(chart) chart.update();
+        }
+
+        // --- Helpers ---
+        function addLog(msg) {
+            const logDiv = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span style="color:#718096">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            logDiv.prepend(entry);
+        }
+
+        function showAlert(msg, type = 'info') {
+            const area = document.getElementById('alertArea');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-bg-${type}`;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'warning') icon = 'exclamation-triangle';
+            if (type === 'danger') icon = 'exclamation-circle';
+
+            alert.innerHTML = `
+                <i class="fas fa-${icon}"></i>
+                <div style="flex:1">${msg}</div>
+                <i class="fas fa-times" style="font-size: 0.8rem; opacity: 0.7;" onclick="this.parentElement.remove()"></i>
+            `;
+
+            area.appendChild(alert);
+
+            // Auto-remove after animation
+            setTimeout(() => {
+                alert.style.animation = 'toastOut 0.5s ease forwards';
+                setTimeout(() => alert.remove(), 500);
+            }, 4000);
+
+            // Manual click to remove
+            alert.onclick = () => {
+                alert.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(() => alert.remove(), 300);
+            };
+        }
+
+        function downloadCSV() {
+            if (dataLog.length === 0) {
+                alert("No data to export yet!");
+                return;
+            }
+            let csvContent = "data:text/csv;charset=utf-8,Timestamp,Left Moisture,Right Moisture,Pump,Spray\n";
+            dataLog.forEach(row => {
+                csvContent += `${row.timestamp},${row.left},${row.right},${row.pump},${row.spray}\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "farm_data_log.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

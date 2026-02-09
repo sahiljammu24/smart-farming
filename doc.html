@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farm Documentation</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg-light: #f8fafc;
+            --text-dark: #1e293b;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+
+        }
+        h1, h2, h3 { color: var(--primary); }
+        h1 { font-size: 2.5rem; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        h2 { margin-top: 40px; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        code { background: #f1f5f9; padding: 2px 6px; border-radius: 6px; font-family: monospace; }
+        pre { background: #1e293b; color: #f8fafc; padding: 20px; border-radius: 12px; overflow-x: auto; }
+        pre code { background: transparent; color: inherit; padding: 0; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 12px; border: 1px solid var(--border); text-align: left; }
+        th { background: #f8fafc; }
+        img { max-width: 100%; border-radius: 12px; margin: 20px 0; }
+        .badge { display: inline-block; margin-right: 5px; }
+        @media (max-width: 768px) { .container { padding: 20px; } h1 { font-size: 1.8rem; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌱 Smart Farm Control System</h1>
+
+<p><img src="https://img.shields.io/badge/Status-State%20Level%20Competition-orange?style=for-the-badge&logo=fire" alt="Project Status" /><br />
+<img src="https://img.shields.io/badge/Category-AgriTech-green?style=for-the-badge&logo=leaf" alt="Category" /><br />
+<img src="https://img.shields.io/badge/Platform-Web%20%2B%20Arduino-blue?style=for-the-badge&logo=arduino" alt="Platform" /></p>
+
+<h2>🏆 Science Fair Representation</h2>
+
+<p><strong>State Level Science Fair Entry - Agricultural Innovation</strong></p>
+
+<p style="font-size: 20px;">
+    <strong>Created by:</strong> Sahil Jammu<br>
+    <strong>Represented by:</strong> Samuel Bhatti
+</p>
+
+<hr />
+
+<h2>📖 Overview</h2>
+
+<p>The <strong>Smart Farm Control System</strong> is a modern, web-based IoT dashboard designed to revolutionize small-scale farming. By leveraging the <strong>Web Serial API</strong>, it connects directly to an Arduino controller directly through the browser—eliminating the need for complex cloud backends or internet connectivity.</p>
+
+<p>This project empowers farmers with:<br />
+*   <strong>Precision Agriculture:</strong> Real-time soil moisture monitoring.<br />
+*   <strong>Remote Control:</strong> Manual toggling of irrigation pumps and sprayers.<br />
+*   <strong>Automation:</strong> Intelligent scheduling and threshold-based auto-watering.<br />
+*   <strong>Accessibility:</strong> A plug-and-play solution that works on standard web browsers.</p>
+
+<h2>✨ Key Features</h2>
+
+<h3>🖥️ Smart Dashboard (Web Interface)</h3>
+
+<ul>
+<li><strong>Real-time Visualization:</strong> Live gauge bars for Left/Right soil moisture sensors.</li>
+<li><strong>Voice Command:</strong> Hands-free control using Web Speech API.</li>
+<li><strong>Weather Intelligence:</strong> Local weather integration to advise on irrigation (uses Open-Meteo).</li>
+<li><strong>Data Analytics:</strong> Interactive charts tracking moisture trends over time (exportable to CSV).</li>
+<li><strong>Smart Scheduler:</strong> Timer-based execution for routine tasks.</li>
+<li><strong>Crop Presets:</strong> One-click configurations for specific crop needs.</li>
+<li><strong>Theming:</strong> Auto-detects system Dark/Light mode preferences.</li>
+</ul>
+
+<h3>🤖 Hardware Integration</h3>
+
+<ul>
+<li><strong>Direct Control:</strong> Manages relays for water pumps and pesticide sprayers.</li>
+<li><strong>Sensor Feedback:</strong> Reads analog data from capacitive/resistive soil sensors.</li>
+</ul>
+
+<hr />
+
+<h2>🏗️ System Architecture</h2>
+
+<p>The system follows a <strong>Client-Hardware</strong> architecture using Serial communication.</p>
+
+<p><img src="assets/architecture_diagram.svg" alt="System Architecture" /></p>
+
+<pre><code>    *   **Action:** Valid commands are sent to the Arduino via Web Serial.
+    *   **Visual:** A stackable toast notification appears.
+    *   **Audio:** The system uses **Text-to-Speech (TTS)** to verbally confirm the action (e.g., "Pump started") or explain errors (e.g., "Disable auto mode first").
+graph LR
+    User((User)) --&gt;|Clicks/Voice| Dashboard[Web Dashboard]
+    Dashboard &lt;--&gt;|Web Serial (USB)| Arduino[Arduino Uno]
+
+    subgraph "Browser Environment"
+        Dashboard
+        Logic[JS Controller]
+        Voice[Speech Recog]
+        Weather[Weather API]
+    end
+
+    subgraph "Field Hardware"
+        Arduino
+        Relay1[Pump Relay]
+        Relay2[Sprayer Relay]
+        Sensors[Soil Sensors]
+    end
+
+    Logic --&gt; Dashboard
+    Weather -.-&gt; Logic
+    Arduino --&gt; Relay1
+    Arduino --&gt; Relay2
+    Sensors --&gt;|Analog| Arduino
+
+</code></pre>
+
+<h3>🎤 Voice Commands</h3>
+
+<p>The system leverages the <strong>Web Speech API</strong> for advanced hands-free control. This eliminates the need for external hardware like Alexa or Google Home, as the processing happens directly in the browser.</p>
+
+<h4>How it Works:</h4>
+
+<ul>
+<li><strong>Speech-to-Text:</strong> When activated, the browser's native <code>webkitSpeechRecognition</code> engine listens to microphone input and converts spoken audio into a text string.</li>
+<li><strong>Feedback Loop:</strong>
+<ul>
+<li><strong>Action:</strong> Valid commands are sent to the Arduino via Web Serial.</li>
+<li><strong>Visual:</strong> A stackable toast notification appears.</li>
+<li><strong>Audio:</strong> The system uses <strong>Text-to-Speech (TTS)</strong> to verbally confirm the action (e.g., "Pump started") or explain errors (e.g., "Disable auto mode first").</li>
+</ul></li>
+</ul>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left;">Command Group</th>
+  <th style="text-align:left;">Phrases (Case-insensitive)</th>
+  <th style="text-align:left;">Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left;"><strong>Pump Control</strong></td>
+  <td style="text-align:left;">"Turn on / off pump", "Start/Stop pump"</td>
+  <td style="text-align:left;">Activates / Deactivates Water Pump Relay</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Spray Control</strong></td>
+  <td style="text-align:left;">"Turn on / off spray"</td>
+  <td style="text-align:left;">Activates / Deactivates Pesticide Sprayer Relay</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Auto Mode</strong></td>
+  <td style="text-align:left;">"Auto mode on / off"</td>
+  <td style="text-align:left;">Enables / Disables threshold-based watering</td>
+</tr>
+</tbody>
+</table>
+
+<h2>🖼️ Dashboard Preview</h2>
+
+<p><img src="assets/dashboard_mockup.png" alt="Dashboard Mockup" /></p>
+
+<hr />
+
+<h2>🎮 Usage Guide</h2>
+
+<h3>🤖 Auto Mode Logic</h3>
+
+<p>When enabled, the system automatically manages irrigation based on soil moisture levels.<br />
+*   <strong>Trigger Condition:</strong> <code>Avg Moisture &lt; Low Threshold</code> → <strong>Pump ON</strong><br />
+*   <strong>Stop Condition:</strong> <code>Avg Moisture &gt; High Threshold</code> → <strong>Pump OFF</strong><br />
+*   <strong>Note:</strong> Manual pump controls are disabled while Auto Mode is active to prevent conflicts.</p>
+
+<h3>🌾 Crop Presets</h3>
+
+<p>One-click settings for common crops:<br />
+*   <strong>🍅 Tomato:</strong> 60% - 80% (Moist)<br />
+*   <strong>🌶️ Chili:</strong> 50% - 70% (Moderate)<br />
+*   <strong>🍚 Rice:</strong> 70% - 90% (High Moisture)<br />
+*   <strong>🌾 Wheat:</strong> 80% - 100% (Very High)</p>
+
+<hr />
+
+<h2>🔌 Hardware Setup</h2>
+
+<h3>🛠️ Bill of Materials (Components)</h3>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left;">Component</th>
+  <th style="text-align:center;">Image</th>
+  <th style="text-align:left;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left;"><h2>Arduino Uno R3</h2></td>
+  <td style="text-align:center;"><img src="assets/img.png" width="500" /></td>
+  <td style="text-align:left;"><p style="font-size: 20px">The central microcontroller unit (ATmega328P).</p></td>
+</tr>
+<tr>
+  <td style="text-align:left;"><h2>Soil Sensor</h2></td>
+  <td style="text-align:center;"><img src="assets/soil_sensor.png" width="500" /></td>
+  <td style="text-align:left;"><p style="font-size: 20px">Capacitive/Resistive Soil Moisture Sensor v1.2.</p></td>
+</tr>
+<tr>
+  <td style="text-align:left;"><h2>Relay Module</h2></td>
+  <td style="text-align:center;"><img src="assets/relay.png" width="500" /></td>
+  <td style="text-align:left;"><p style="font-size: 20px">5V Relay module to control high-voltage pumps.</p></td>
+</tr>
+<tr>
+  <td style="text-align:left;"><h2>Breadboard</h2></td>
+  <td style="text-align:center;"><img src="assets/anatomy of breadboard.png" width="600" /></td>
+  <td style="text-align:left;"><p style="font-size: 20px">Used for prototyping and connecting components.</p></td>
+</tr>
+</tbody>
+</table>
+
+<h3>⚡ Circuit &amp; Wiring</h3>
+
+<h4>Circuit Diagram</h4>
+
+<p>The following diagram illustrates the complete wiring of the system:<br />
+<img src="assets/circuit_diagram.svg" alt="Circuit Diagram" /></p>
+
+<h4>Wiring Reference</h4>
+
+<p><strong>Note:</strong> Use the red numbers in parentheses as your reference. Analog pins are addressed as <code>A0</code> through <code>A5</code>.</p>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left;">Component</th>
+  <th style="text-align:center;">Arduino Pin</th>
+  <th style="text-align:left;">Type</th>
+  <th style="text-align:left;">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left;"><strong>Relay 1 (Pump)</strong></td>
+  <td style="text-align:center;"><code>3</code></td>
+  <td style="text-align:left;">Digital Output</td>
+  <td style="text-align:left;">Connected to external pump</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Relay 2 (Sprayer)</strong></td>
+  <td style="text-align:center;"><code>4</code></td>
+  <td style="text-align:left;">Digital Output</td>
+  <td style="text-align:left;">Connected to sprayer unit</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Moisture Sensor L</strong></td>
+  <td style="text-align:center;"><code>A0</code></td>
+  <td style="text-align:left;">Analog Input</td>
+  <td style="text-align:left;">Left field sensor</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Moisture Sensor R</strong></td>
+  <td style="text-align:center;"><code>A1</code></td>
+  <td style="text-align:left;">Analog Input</td>
+  <td style="text-align:left;">Right field sensor</td>
+</tr>
+</tbody>
+</table>
+
+<h3>⚙️ Technical Specifications (Arduino Uno R3)</h3>
+
+<ul>
+<li><strong>Microcontroller:</strong> ATmega328P</li>
+<li><strong>Operating Voltage:</strong> 5V</li>
+<li><strong>Input Voltage:</strong> 7-12V (Recommended)</li>
+<li><strong>Digital Pins:</strong> 14 (of which 6 provide PWM)</li>
+<li><strong>Analog Pins:</strong> 6</li>
+</ul>
+
+<hr />
+
+<h2>🧠 Calibration Logic</h2>
+
+<p>The system reads raw analog values (0-1023) from the moisture sensors. Since soil sensors return high values for dry soil and low values for wet soil (resistive nature), the code inverts and maps this to a percentage:</p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="c1">// 1023 (Dry) -&gt; 0%</span>
+<span class="c1">// 0 (Wet)    -&gt; 100%</span>
+<span class="kt">int</span><span class="w"> </span><span class="n">percent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map</span><span class="p">(</span><span class="n">rawReading</span><span class="p">,</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+</code></pre>
+</div>
+
+<h3>⚠️ Firmware Protocol Note</h3>
+
+<p>The repository contains two firmware concepts.<br />
+1.  <strong><code>uno_code/uno_code.ino</code></strong>: The basic serial firmware.<br />
+2.  <strong>Web-Compatible Firmware</strong>: The web dashboard sends text commands (<code>PUMP_ON</code>, <code>STATUS</code>). <strong>Use the code below</strong> for full dashboard functionality.</p>
+
+<p><details><br />
+<summary><b>Click to view Compatible Arduino Sketch</b></summary></p>
+
+<div class="codehilite">
+<pre><span></span><code><span class="c1">// Flash this to your Arduino for the Dashboard to work!</span>
+
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">PUMP_PIN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">SPRAY_PIN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">SENSOR_L_PIN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A0</span><span class="p">;</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">SENSOR_R_PIN</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">A1</span><span class="p">;</span>
+
+<span class="n">String</span><span class="w"> </span><span class="n">pumpState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;OFF&quot;</span><span class="p">;</span>
+<span class="n">String</span><span class="w"> </span><span class="n">sprayState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;OFF&quot;</span><span class="p">;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">setup</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">begin</span><span class="p">(</span><span class="mi">9600</span><span class="p">);</span><span class="w"> </span><span class="c1">// Matches Web Dashboard Baud Rate</span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="n">PUMP_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">OUTPUT</span><span class="p">);</span>
+<span class="w">  </span><span class="n">pinMode</span><span class="p">(</span><span class="n">SPRAY_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">OUTPUT</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Initialize states</span>
+<span class="w">  </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">PUMP_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">LOW</span><span class="p">);</span>
+<span class="w">  </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">SPRAY_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">LOW</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">loop</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Serial</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">String</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Serial</span><span class="p">.</span><span class="n">readStringUntil</span><span class="p">(</span><span class="sc">&#39;\n&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">command</span><span class="p">.</span><span class="n">trim</span><span class="p">();</span><span class="w"> </span><span class="c1">// Remove whitespace</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;PUMP_ON&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">PUMP_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">HIGH</span><span class="p">);</span>
+<span class="w">      </span><span class="n">pumpState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ON&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;PUMP_OFF&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">PUMP_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">LOW</span><span class="p">);</span>
+<span class="w">      </span><span class="n">pumpState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;OFF&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;SPRAY_ON&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">SPRAY_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">HIGH</span><span class="p">);</span>
+<span class="w">      </span><span class="n">sprayState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ON&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;SPRAY_OFF&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">digitalWrite</span><span class="p">(</span><span class="n">SPRAY_PIN</span><span class="p">,</span><span class="w"> </span><span class="n">LOW</span><span class="p">);</span>
+<span class="w">      </span><span class="n">sprayState</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;OFF&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">command</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;STATUS&quot;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">sendData</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">sendData</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Read Sensors</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">rawL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">analogRead</span><span class="p">(</span><span class="n">SENSOR_L_PIN</span><span class="p">);</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">rawR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">analogRead</span><span class="p">(</span><span class="n">SENSOR_R_PIN</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Map 1023-0 (Dry-Wet) to 0-100%</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">pctL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map</span><span class="p">(</span><span class="n">rawL</span><span class="p">,</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span><span class="w"> </span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">pctR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">map</span><span class="p">(</span><span class="n">rawR</span><span class="p">,</span><span class="w"> </span><span class="mi">1023</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Constrain to 0-100</span>
+<span class="w">  </span><span class="n">pctL</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">constrain</span><span class="p">(</span><span class="n">pctL</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+<span class="w">  </span><span class="n">pctR</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">constrain</span><span class="p">(</span><span class="n">pctR</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Format: DATA|Left|Right|PumpState|SprayState</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;DATA|&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pctL</span><span class="p">);</span><span class="w"> </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;|&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pctR</span><span class="p">);</span><span class="w"> </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;|&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">pumpState</span><span class="p">);</span><span class="w"> </span><span class="n">Serial</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="s">&quot;|&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">Serial</span><span class="p">.</span><span class="n">println</span><span class="p">(</span><span class="n">sprayState</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre>
+</div>
+
+<p></details></p>
+
+<hr />
+
+<h2>🚀 Getting Started</h2>
+
+<ol>
+<li><strong>Hardware Prep:</strong>
+<ul>
+<li>Connect your Arduino via USB.</li>
+<li>Upload the <strong>Compatible Arduino Sketch</strong> (above) using Arduino IDE.</li>
+</ul></li>
+<li><strong>Launch Dashboard:</strong>
+<ul>
+<li>Open <code>index.html</code> in <strong>Chrome</strong> or <strong>Edge</strong> (Web Serial is not supported in Firefox/Safari).</li>
+</ul></li>
+<li><strong>Connect:</strong>
+<ul>
+<li>Click <strong>"Connect Device"</strong> on the dashboard.</li>
+<li>Select your Arduino COM port from the popup list.</li>
+<li>Status should turn <strong>Connected ✅</strong>.</li>
+</ul></li>
+<li><strong>Operate:</strong>
+<ul>
+<li>Use the toggle switches or Voice Commands.</li>
+<li>Enable <strong>Auto Mode</strong> to let the system manage watering based on the slider thresholds.</li>
+</ul></li>
+</ol>
+
+<h2>❓ Troubleshooting</h2>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:left;">Issue</th>
+  <th style="text-align:left;">Possible Cause</th>
+  <th style="text-align:left;">Solution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:left;"><strong>"Connect Device" button does nothing</strong></td>
+  <td style="text-align:left;">Browser incompatibility</td>
+  <td style="text-align:left;">Use <strong>Chrome</strong> or <strong>Edge</strong>. Firefox/Safari do not support Web Serial API.</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Status says "Connected" but no data</strong></td>
+  <td style="text-align:left;">Wrong Baud Rate</td>
+  <td style="text-align:left;">Ensure Arduino code has <code>Serial.begin(9600)</code>.</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Sensors stuck at 0% or 100%</strong></td>
+  <td style="text-align:left;">Loose wiring or Calibration</td>
+  <td style="text-align:left;">Check connections to A0/A1. Try dipping sensor in water to test range.</td>
+</tr>
+<tr>
+  <td style="text-align:left;"><strong>Voice commands not working</strong></td>
+  <td style="text-align:left;">Microphone permission</td>
+  <td style="text-align:left;">Allow microphone access in browser settings.</td>
+</tr>
+</tbody>
+</table>
+
+<h2>🔮 Future Roadmap</h2>
+
+<ul>
+<li><strong>Hardware:</strong> Add NPK sensors for nutrient analysis.</li>
+<li><strong>Mobile:</strong> Wrap the web app into a PWA (Progressive Web App) for mobile installation.</li>
+<li><strong>AI:</strong> Train a model on the CSV data exports to predict optimal harvest times.</li>
+</ul>
+
+    </div>
+</body>
+</html>
